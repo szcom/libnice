@@ -503,6 +503,10 @@ gst_nice_src_change_state (GstElement * element, GstStateChange transition)
       GST_OBJECT_UNLOCK (src);
       break;
     }
+    case GST_STATE_CHANGE_READY_TO_PAUSED:
+    case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
+    case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
+    case GST_STATE_CHANGE_READY_TO_NULL:
     default:
       break;
   }
@@ -527,6 +531,11 @@ gst_nice_src_change_state (GstElement * element, GstStateChange transition)
       nice_agent_attach_recv (src->agent, src->stream_id, src->component_id,
           src->mainctx, gst_nice_src_read_callback, (gpointer) src);
       break;
+    case GST_STATE_CHANGE_NULL_TO_READY:
+    case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
+    case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
+    case GST_STATE_CHANGE_PAUSED_TO_READY:
+    case GST_STATE_CHANGE_READY_TO_NULL:
     default:
       break;
   }
