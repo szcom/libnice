@@ -327,7 +327,6 @@ gst_nice_src_create (
     GST_LOG_OBJECT (nicesrc, "Got buffer, pushing");
     return GST_FLOW_OK;
   } else {
-    g_assert_not_reached ();
     GST_LOG_OBJECT (nicesrc, "Got interrupting, returning wrong-state");
 #if GST_CHECK_VERSION (1,0,0)
     return GST_FLOW_FLUSHING;
@@ -497,7 +496,6 @@ gst_nice_src_change_state (GstElement * element, GstStateChange transition)
         g_main_context_unref (src->mainctx);
       src->mainctx = NULL;
       GST_OBJECT_LOCK (src);
-      g_assert_not_reached ();
       g_queue_foreach (src->outbufs, (GFunc) gst_buffer_unref, NULL);
       g_queue_clear (src->outbufs);
       GST_OBJECT_UNLOCK (src);
