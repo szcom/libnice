@@ -273,7 +273,7 @@ gst_nice_src_unlock_stop (GstBaseSrc *src)
   GST_OBJECT_LOCK (src);
   nicesrc->unlocked = FALSE;
   if (nicesrc->idle_source) {
-    g_assert (nicesrc->schedule_task);
+    g_assert (!nicesrc->schedule_task);
     g_source_destroy (nicesrc->idle_source);
     g_source_unref(nicesrc->idle_source);
   }
