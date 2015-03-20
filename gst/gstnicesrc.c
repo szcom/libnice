@@ -215,7 +215,7 @@ gst_nice_src_read_callback (NiceAgent *agent,
 
   if (nicesrc->schedule_task) {
     gst_task_schedule (GST_PAD_TASK (GST_BASE_SRC_PAD (nicesrc)));
-  } else {
+  } else if (nicesrc->mainloop) {
     g_main_loop_quit (nicesrc->mainloop);
   }
   GST_OBJECT_UNLOCK (nicesrc);
@@ -229,7 +229,7 @@ gst_nice_src_unlock_idler (gpointer data)
   g_assert (!nicesrc->schedule_task);
 
   GST_OBJECT_LOCK (nicesrc);
-  if (nicesrc->unlocked)
+  if (nicesrc->unlocked && nicesrc->mainloop)
     g_main_loop_quit (nicesrc->mainloop);
 
   if (nicesrc->idle_source) {
@@ -251,9 +251,10 @@ gst_nice_src_unlock (GstBaseSrc *src)
   nicesrc->unlocked = TRUE;
 
   if (!nicesrc->schedule_task) {
-    g_main_loop_quit (nicesrc->mainloop);
+    if (nicesrc->mainloop)
+      g_main_loop_quit (nicesrc->mainloop);
 
-    if (!nicesrc->idle_source) {
+    if (!nicesrc->idle_source && nicesrc->mainloop) {
       nicesrc->idle_source = g_idle_source_new ();
       g_source_set_priority (nicesrc->idle_source, G_PRIORITY_HIGH);
       g_source_set_callback (nicesrc->idle_source, gst_nice_src_unlock_idler, src, NULL);
@@ -309,7 +310,7 @@ gst_nice_src_create (
       *buffer = NULL;
       g_assert_not_reached ();
       return GST_FLOW_OK;
-    } else {
+    } else if (nicesrc->mainloop) {
       GST_OBJECT_UNLOCK (basesrc);
       g_main_loop_run (nicesrc->mainloop);
       GST_OBJECT_LOCK (basesrc);
