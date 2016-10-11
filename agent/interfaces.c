@@ -119,7 +119,7 @@ nice_interfaces_get_local_interfaces (void)
 
     if (ifa->ifa_addr == NULL)
       continue;
-    if (strstr(ifa->ifa_name, "docker") == NULL)
+    if (strstr(ifa->ifa_name, "docker") != NULL)
       continue;
     if (ifa->ifa_addr->sa_family == AF_INET || ifa->ifa_addr->sa_family == AF_INET6) {
       nice_debug ("Found interface : %s", ifa->ifa_name);
@@ -176,7 +176,7 @@ nice_interfaces_get_local_interfaces (void)
   for (ifr = ifc.ifc_req;
        (gchar *) ifr < (gchar *) ifc.ifc_req + ifc.ifc_len;
        ++ifr) {
-    if (strstr(ifr->ifr_name, "docker") == NULL)
+    if (strstr(ifr->ifr_name, "docker") != NULL)
       continue;
 
     nice_debug ("Found interface : %s", ifr->ifr_name);
@@ -262,7 +262,7 @@ nice_interfaces_get_local_ips (gboolean include_loopback)
 
     if (ifa->ifa_addr == NULL)
       continue;
-    if (strstr(ifa->ifa_name, "docker") == NULL)
+    if (strstr(ifa->ifa_name, "docker") != NULL)
       continue;
 
 
