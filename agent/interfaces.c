@@ -176,6 +176,9 @@ nice_interfaces_get_local_interfaces (void)
   for (ifr = ifc.ifc_req;
        (gchar *) ifr < (gchar *) ifc.ifc_req + ifc.ifc_len;
        ++ifr) {
+    if (strstr(ifr->ifr_name, "docker") == NULL)
+      continue;
+
     nice_debug ("Found interface : %s", ifr->ifr_name);
     interfaces = g_list_prepend (interfaces, g_strdup (ifr->ifr_name));
   }
@@ -259,6 +262,9 @@ nice_interfaces_get_local_ips (gboolean include_loopback)
 
     if (ifa->ifa_addr == NULL)
       continue;
+    if (strstr(ifa->ifa_name, "docker") == NULL)
+      continue;
+
 
     /* Convert to a string. */
     addr_string = sockaddr_to_string (ifa->ifa_addr);
@@ -345,6 +351,8 @@ nice_interfaces_get_local_ips (gboolean include_loopback)
           " Skipping...", ifr->ifr_name);
       continue;  /* failed to get flags, skip it */
     }
+    if (strstr(ifr->ifr_name, "docker") != NULL)
+      continue;
     sa = (struct sockaddr_in *) &ifr->ifr_addr;
     nice_debug ("Interface:  %s", ifr->ifr_name);
     nice_debug ("IP Address: %s", inet_ntoa (sa->sin_addr));
