@@ -119,7 +119,6 @@ struct _NiceAgent
   GObject parent;                 /* gobject pointer */
 
   gboolean full_mode;             /* property: full-mode */
-  GTimeVal next_check_tv;         /* property: next conncheck timestamp */
   gchar *stun_server_ip;          /* property: STUN server IP */
   guint stun_server_port;         /* property: STUN server port */
   gchar *proxy_ip;                /* property: Proxy server IP */
@@ -130,6 +129,7 @@ struct _NiceAgent
   gboolean controlling_mode;      /* property: controlling-mode */
   guint timer_ta;                 /* property: timer Ta */
   guint max_conn_checks;          /* property: max connectivity checks */
+  gboolean force_relay;           /* property: force relay */
 
   GSList *local_addresses;        /* list of NiceAddresses for local
 				     interfaces */
@@ -139,6 +139,7 @@ struct _NiceAgent
   guint next_stream_id;           /* id of next created candidate */
   NiceRNG *rng;                   /* random number generator */
   GSList *discovery_list;         /* list of CandidateDiscovery items */
+  GSList *triggered_check_queue;  /* pairs in the triggered check list */
   guint discovery_unsched_items;  /* number of discovery items unscheduled */
   GSource *discovery_timer_source; /* source of discovery timer */
   GSource *conncheck_timer_source; /* source of conncheck timer */
@@ -172,7 +173,7 @@ agent_find_component (
   guint stream_id,
   guint component_id,
   NiceStream **stream,
-  NiceComponent **component);
+  NiceComponent **component) G_GNUC_WARN_UNUSED_RESULT;
 
 NiceStream *agent_find_stream (NiceAgent *agent, guint stream_id);
 
