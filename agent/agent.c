@@ -411,7 +411,7 @@ nice_agent_class_init (NiceAgentClass *klass)
         "full-mode",
         "ICE full mode",
         "Whether agent runs in ICE full mode",
-	TRUE, /* use full mode by default */
+	FALSE, /* dont use full mode by default */
         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
   g_object_class_install_property (gobject_class, PROP_STUN_PACING_TIMER,
