@@ -1085,7 +1085,7 @@ nice_agent_get_property (
       break;
 
     case PROP_FULL_MODE:
-      g_value_set_boolean (value, agent->full_mode);
+      g_value_set_boolean (FALSE, agent->full_mode);
       break;
 
     case PROP_STUN_PACING_TIMER:
