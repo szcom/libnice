@@ -628,7 +628,7 @@ nice_agent_class_init (NiceAgentClass *klass)
         "ice-tcp",
         "Use ICE-TCP",
         "Use ICE-TCP specification to generate TCP candidates",
-        TRUE, /* use ice-tcp by default */
+        FALSE, /* dont use ice-tcp by default */
         G_PARAM_READWRITE));
 
   /**
@@ -685,7 +685,7 @@ nice_agent_class_init (NiceAgentClass *klass)
         "Use conncheck as keepalives",
         "Use binding requests which require a reply as keepalives instead of "
         "binding indications which don't.",
-	FALSE,
+	TRUE,
         G_PARAM_READWRITE));
 
   /* install signals */
@@ -1016,7 +1016,7 @@ nice_agent_init (NiceAgent *agent)
   agent->compatibility = NICE_COMPATIBILITY_RFC5245;
   agent->reliable = FALSE;
   agent->use_ice_udp = TRUE;
-  agent->use_ice_tcp = TRUE;
+  agent->use_ice_tcp = FALSE;
 
   agent->rng = nice_rng_new ();
   priv_generate_tie_breaker (agent);
