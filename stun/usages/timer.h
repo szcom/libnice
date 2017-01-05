@@ -134,14 +134,21 @@ struct stun_timer_s {
  * cases as it is also what is used by SIP style VoIP when sending A-Law and
  * mu-Law audio, so 200ms should be hyper safe.
  */
-#define STUN_TIMER_DEFAULT_TIMEOUT 200
+
+/*
+SZ: keep 50ms retransmissions and try longer because we dont set candidates
+on both sides at the same time
+*/
+#define STUN_TIMER_DEFAULT_TIMEOUT 50
 
 /**
  * STUN_TIMER_DEFAULT_MAX_RETRANSMISSIONS:
  *
  * The default maximum retransmissions allowed before a timer decides to timeout
+
+ * SZ: keep trying for a minute
  */
-#define STUN_TIMER_DEFAULT_MAX_RETRANSMISSIONS 7
+#define STUN_TIMER_DEFAULT_MAX_RETRANSMISSIONS (1000/STUN_TIMER_DEFAULT_TIMEOUT*60)
 
 /**
  * STUN_TIMER_DEFAULT_RELIABLE_TIMEOUT:
