@@ -299,6 +299,7 @@ static gboolean priv_conn_check_tick_stream (NiceStream *stream, NiceAgent *agen
             {
               /* case: not ready, so schedule a new timeout */
               unsigned int timeout = stun_timer_remainder (&p->timer);
+              timeout = STUN_TIMER_DEFAULT_TIMEOUT; /* ZZZ make it equal to stun timer */
               nice_debug ("Agent %p :STUN transaction retransmitted (timeout %dms).",
                   agent, timeout);
 
