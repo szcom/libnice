@@ -321,6 +321,7 @@ static gboolean priv_conn_check_tick_stream (NiceStream *stream, NiceAgent *agen
 
               /* note: convert from milli to microseconds for g_time_val_add() */
               p->next_tick = *now;
+              timeout = STUN_TIMER_DEFAULT_TIMEOUT; /* ZZZ make it equal to stun timer */
               g_time_val_add (&p->next_tick, timeout * 1000);
 
               keep_timer_going = TRUE;
@@ -1947,6 +1948,7 @@ int conn_check_send (NiceAgent *agent, CandidateCheckPair *pair)
       timeout = stun_timer_remainder (&pair->timer);
       /* note: convert from milli to microseconds for g_time_val_add() */
       g_get_current_time (&pair->next_tick);
+      timeout = STUN_TIMER_DEFAULT_TIMEOUT; /* ZZZ make it equal to stun timer */
       g_time_val_add (&pair->next_tick, timeout * 1000);
     } else {
       nice_debug ("Agent %p: buffer is empty, cancelling conncheck", agent);
