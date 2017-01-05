@@ -1800,6 +1800,8 @@ static unsigned int priv_compute_conncheck_timer (NiceAgent *agent,
   GSList *item;
   guint waiting_and_in_progress = 0;
   unsigned int rto = 0;
+  
+  return STUN_TIMER_DEFAULT_TIMEOUT;
 
   for (item = stream->conncheck_list; item; item = item->next) {
     CandidateCheckPair *pair = item->data;
