@@ -2653,9 +2653,7 @@ nice_agent_gather_candidates (
     agent_unlock_and_emit (agent);
     return TRUE;
   }
-  
-  agent->full_mode = FALSE;
-  
+
   nice_debug ("Agent %p : In %s mode, starting candidate gathering.", agent,
       agent->full_mode ? "ICE-FULL" : "ICE-LITE");
 
