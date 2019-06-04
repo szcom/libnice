@@ -500,13 +500,17 @@ run_io_stream_test (guint deadlock_timeout, gboolean reliable,
  * This must only be called from the read thread implementation. */
 void
 check_for_termination (TestIOStreamThreadData *data, gsize *recv_count,
-    gsize *other_recv_count, gsize *send_count, gsize expected_recv_count)
+    gsize *other_recv_count, volatile gsize *send_count, gsize expected_recv_count)
 {
   guint stream_id;
   gpointer tmp;
 
   /* Wait for transmission to complete. */
-  while (*send_count < expected_recv_count);
+  while (*send_count < expected_recv_count) {
+    if (data->callbacks->wait_transmission_cb) {
+      data->callbacks->wait_transmission_cb (data->agent);
+    }
+  }
 
   /* Send a close message. */
   tmp = g_object_get_data (G_OBJECT (data->agent), "stream-id");
@@ -554,7 +558,7 @@ void
 stop_main_loop (GMainLoop *loop)
 {
   GSource *src = g_idle_source_new ();
-  g_source_set_callback (src, (GSourceFunc) g_main_loop_quit,
+  g_source_set_callback (src, G_SOURCE_FUNC (g_main_loop_quit),
       g_main_loop_ref (loop), (GDestroyNotify) g_main_loop_unref);
   g_source_attach (src, g_main_loop_get_context (loop));
   g_source_unref (src);

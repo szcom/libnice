@@ -44,6 +44,10 @@
 #include <unistd.h>
 #endif
 
+#if !GLIB_CHECK_VERSION(2, 58, 0)
+#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
+#endif
+
 /* Make the message sufficiently large to not hit Nagle’s algorithm in the
  * pseudo-TCP implementation, and hence run really slowly. */
 #define MESSAGE_SIZE 1284 /* bytes */
@@ -61,6 +65,7 @@ typedef struct {
   void (*new_selected_pair) (NiceAgent *agent, guint stream_id,
       guint component_id, gchar *lfoundation, gchar *rfoundation,
       TestIOStreamThreadData *data);
+  void (*wait_transmission_cb) (NiceAgent *agent);
 } TestIOStreamCallbacks;
 
 struct _TestIOStreamThreadData {
@@ -102,6 +107,6 @@ void run_io_stream_test (guint deadlock_timeout, gboolean reliable,
     gpointer l_user_data, GDestroyNotify l_user_data_free,
     gpointer r_user_data, GDestroyNotify r_user_data_free);
 void check_for_termination (TestIOStreamThreadData *data, gsize *recv_count,
-    gsize *other_recv_count, gsize *send_count, gsize expected_recv_count);
+    gsize *other_recv_count, volatile gsize *send_count, gsize expected_recv_count);
 
 void stop_main_loop (GMainLoop *loop);
