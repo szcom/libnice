@@ -22,12 +22,15 @@ noinst_PROGRAMS = simple-example threaded-example sdp-example
 
 simple_example_SOURCES = simple-example.c
 simple_example_LDADD = $(top_builddir)/agent/libagent.la \
-	 $(GLIB_LIBS) $(GUPNP_LIBS)
+	$(GLIB_LIBS) $(GUPNP_LIBS) \
+	$(OPENSSL_LDFLAGS)
 
 threaded_example_SOURCES = threaded-example.c
 threaded_example_LDADD = $(top_builddir)/agent/libagent.la \
-	 $(GLIB_LIBS) $(GUPNP_LIBS)
+	 $(GLIB_LIBS) $(GUPNP_LIBS) \
+	$(OPENSSL_LDFLAGS)
 
 sdp_example_SOURCES = sdp-example.c
 sdp_example_LDADD = $(top_builddir)/agent/libagent.la \
-	 $(GLIB_LIBS) $(GUPNP_LIBS)
+	 $(GLIB_LIBS) $(GUPNP_LIBS) \
+	$(OPENSSL_LDFLAGS)
