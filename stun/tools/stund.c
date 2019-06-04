@@ -100,12 +100,13 @@ int listen_socket (int fam, int type, int proto, unsigned int port)
     struct sockaddr_in6 in6;
     struct sockaddr_storage storage;
   } addr;
-
   if (fd == -1)
   {
     perror ("Error opening IP port");
     return -1;
   }
+  if (fd < 3)
+    goto error;
 
   memset (&addr, 0, sizeof (addr));
   addr.storage.ss_family = fam;
@@ -130,7 +131,7 @@ int listen_socket (int fam, int type, int proto, unsigned int port)
       assert (0);  /* should never be reached */
   }
 
-  if (bind (fd, &addr.addr, sizeof (struct sockaddr_storage)))
+  if (bind (fd, &addr.addr, sizeof (struct sockaddr)))
   {
     perror ("Error opening IP port");
     goto error;
@@ -187,7 +188,7 @@ static int dgram_process (int sock, StunAgent *oldagent, StunAgent *newagent)
   StunValidationStatus validation;
   StunAgent *agent = NULL;
 
-  addr_len = sizeof (struct sockaddr_storage);
+  addr_len = sizeof (struct sockaddr_in);
   len = recvfrom (sock, buf, sizeof(buf), 0, &addr.addr, &addr_len);
   if (len == (size_t)-1)
     return -1;

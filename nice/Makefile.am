@@ -22,8 +22,8 @@ libnice_la_LIBADD = \
 
 libnice_la_LDFLAGS = \
 	-export-symbols $(srcdir)/libnice.sym \
-	$(LIBNICE_LT_LDFLAGS) \
-	$(OPENSSL_LDFLAGS)
+	$(LIBNICE_LT_LDFLAGS)
+
 
 AM_CFLAGS = \
 	$(LIBNICE_CFLAGS) \

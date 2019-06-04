@@ -50,7 +50,6 @@
 #include <fcntl.h>
 
 #include "udp-bsd.h"
-#include "agent-priv.h"
 
 #ifndef G_OS_WIN32
 #include <unistd.h>
@@ -71,9 +70,6 @@ static void socket_set_writable_callback (NiceSocket *sock,
 
 struct UdpBsdSocketPrivate
 {
-  GMutex mutex;
-
-  /* protected by mutex */
   NiceAddress niceaddr;
   GSocketAddress *gaddr;
 };
@@ -160,8 +156,6 @@ nice_udp_bsd_socket_new (NiceAddress *addr)
   sock->set_writable_callback = socket_set_writable_callback;
   sock->close = socket_close;
 
-  g_mutex_init (&priv->mutex);
-
   return sock;
 }
 
@@ -170,8 +164,8 @@ socket_close (NiceSocket *sock)
 {
   struct UdpBsdSocketPrivate *priv = sock->priv;
 
-  g_clear_object (&priv->gaddr);
-  g_mutex_clear (&priv->mutex);
+  if (priv->gaddr)
+    g_object_unref (priv->gaddr);
   g_slice_free (struct UdpBsdSocketPrivate, sock->priv);
   sock->priv = NULL;
 
@@ -189,8 +183,9 @@ socket_recv_messages (NiceSocket *sock,
   guint i;
   gboolean error = FALSE;
 
-  /* Make sure socket has not been freed: */
-  g_assert (sock->priv != NULL);
+  /* Socket has been closed: */
+  if (sock->priv == NULL)
+    return 0;
 
   /* Read messages into recv_messages until one fails or would block, or we
    * reach the end. */
@@ -252,50 +247,38 @@ socket_send_message (NiceSocket *sock, const NiceAddress *to,
   struct UdpBsdSocketPrivate *priv = sock->priv;
   GError *child_error = NULL;
   gssize len;
-  GSocketAddress *gaddr = NULL;
 
-  /* Make sure socket has not been freed: */
-  g_assert (sock->priv != NULL);
+  /* Socket has been closed: */
+  if (priv == NULL)
+    return -1;
 
-  g_mutex_lock (&priv->mutex);
   if (!nice_address_is_valid (&priv->niceaddr) ||
       !nice_address_equal (&priv->niceaddr, to)) {
     union {
       struct sockaddr_storage storage;
       struct sockaddr addr;
     } sa;
+    GSocketAddress *gaddr;
 
-    g_clear_object (&priv->gaddr);
+    if (priv->gaddr)
+      g_object_unref (priv->gaddr);
 
     nice_address_copy_to_sockaddr (to, &sa.addr);
     gaddr = g_socket_address_new_from_native (&sa.addr, sizeof(sa));
-    if (gaddr)
-      priv->gaddr = g_object_ref (gaddr);
+    priv->gaddr = gaddr;
 
-    if (gaddr == NULL) {
-      g_mutex_unlock (&priv->mutex);
+    if (gaddr == NULL)
       return -1;
-    }
 
     priv->niceaddr = *to;
-  } else {
-    if (priv->gaddr)
-      gaddr = g_object_ref (priv->gaddr);
   }
-  g_mutex_unlock (&priv->mutex);
 
-  len = g_socket_send_message (sock->fileno, gaddr, message->buffers,
+  len = g_socket_send_message (sock->fileno, priv->gaddr, message->buffers,
       message->n_buffers, NULL, 0, G_SOCKET_MSG_NONE, NULL, &child_error);
 
-  g_clear_object (&gaddr);
-
   if (len < 0) {
-    if (g_error_matches (child_error, G_IO_ERROR, G_IO_ERROR_WOULD_BLOCK)) {
+    if (g_error_matches (child_error, G_IO_ERROR, G_IO_ERROR_WOULD_BLOCK))
       len = 0;
-    } else {
-      nice_debug_verbose ("%s: udp-bsd socket %p: error: %s", G_STRFUNC, sock,
-          child_error->message);
-    }
 
     g_error_free (child_error);
   }
@@ -309,8 +292,9 @@ socket_send_messages (NiceSocket *sock, const NiceAddress *to,
 {
   guint i;
 
-  /* Make sure socket has not been freed: */
-  g_assert (sock->priv != NULL);
+  /* Socket has been closed: */
+  if (sock->priv == NULL)
+    return -1;
 
   for (i = 0; i < n_messages; i++) {
     const NiceOutputMessage *message = &messages[i];

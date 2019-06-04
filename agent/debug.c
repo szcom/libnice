@@ -65,15 +65,6 @@ static const GDebugKey keys[] = {
   { NULL, 0},
 };
 
-static const GDebugKey gkeys[] = {
-  { (gchar *)"libnice-stun",  NICE_DEBUG_STUN },
-  { (gchar *)"libnice",  NICE_DEBUG_NICE },
-  { (gchar *)"libnice-pseudotcp",  NICE_DEBUG_PSEUDOTCP },
-  { (gchar *)"libnice-pseudotcp-verbose",  NICE_DEBUG_PSEUDOTCP_VERBOSE },
-  { (gchar *)"libnice-verbose",  NICE_DEBUG_NICE_VERBOSE },
-  { NULL, 0},
-};
-
 static void
 stun_handler (const char *format, va_list ap) G_GNUC_PRINTF (1, 0);
 
@@ -98,11 +89,9 @@ void nice_debug_init (void)
 
     if (flags_string)
       flags = g_parse_debug_string (flags_string, keys,  4);
-    if (gflags_string)
-      flags |= g_parse_debug_string (gflags_string, gkeys,  4);
     if (gflags_string && strstr (gflags_string, "libnice-pseudotcp-verbose"))
       flags |= NICE_DEBUG_PSEUDOTCP_VERBOSE;
-    if (gflags_string && strstr (gflags_string, "libnice-verbose")) {
+    if (gflags_string && strstr (gflags_string, "libnice-nice-verbose")) {
       flags |= NICE_DEBUG_NICE_VERBOSE;
     }
 
@@ -112,7 +101,7 @@ void nice_debug_init (void)
       stun_debug_enable ();
     else
       stun_debug_disable ();
-
+ 
     if (flags & NICE_DEBUG_NICE_VERBOSE)
       debug_verbose_enabled = TRUE;
 
@@ -121,7 +110,7 @@ void nice_debug_init (void)
        pseudotcp flag in order to actually enable verbose pseudotcp */
     if (flags & NICE_DEBUG_PSEUDOTCP_VERBOSE)
       pseudo_tcp_set_debug_level (PSEUDO_TCP_DEBUG_VERBOSE);
-    else if (flags & NICE_DEBUG_PSEUDOTCP)
+    else
       pseudo_tcp_set_debug_level (PSEUDO_TCP_DEBUG_NORMAL);
   }
 }

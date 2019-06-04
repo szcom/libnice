@@ -81,7 +81,7 @@ static gboolean socket_is_reliable (NiceSocket *sock);
 static gboolean socket_can_send (NiceSocket *sock, NiceAddress *addr);
 static void socket_set_writable_callback (NiceSocket *sock,
     NiceSocketWritableCb callback, gpointer user_data);
-static gboolean socket_is_based_on (NiceSocket *sock, NiceSocket *other);
+static gboolean socket_is_base_of (NiceSocket *sock, NiceSocket *other);
 
 
 NiceSocket *
@@ -109,7 +109,7 @@ nice_socks5_socket_new (NiceSocket *base_socket,
     sock->is_reliable = socket_is_reliable;
     sock->can_send = socket_can_send;
     sock->set_writable_callback = socket_set_writable_callback;
-    sock->is_based_on = socket_is_based_on;
+    sock->is_base_of = socket_is_base_of;
     sock->close = socket_close;
 
     /* Send SOCKS5 handshake */
@@ -169,8 +169,9 @@ socket_recv_messages (NiceSocket *sock,
   guint i;
   gint ret = -1;
 
-  /* Make sure socket has not been freed: */
-  g_assert (sock->priv != NULL);
+  /* Socket has been closed: */
+  if (sock->priv == NULL)
+    return 0;
 
   switch (priv->state) {
     case SOCKS_STATE_CONNECTED:
@@ -424,8 +425,9 @@ socket_send_messages (NiceSocket *sock, const NiceAddress *to,
 {
   Socks5Priv *priv = sock->priv;
 
-  /* Make sure socket has not been freed: */
-  g_assert (sock->priv != NULL);
+  /* Socket has been closed: */
+  if (sock->priv == NULL)
+    return -1;
 
   if (priv->state == SOCKS_STATE_CONNECTED) {
     /* Fast path: pass through to the base socket once connected. */
@@ -490,10 +492,9 @@ socket_set_writable_callback (NiceSocket *sock,
 }
 
 static gboolean
-socket_is_based_on (NiceSocket *sock, NiceSocket *other)
+socket_is_base_of (NiceSocket *sock, NiceSocket *other)
 {
-  Socks5Priv *priv = sock->priv;
+  Socks5Priv *priv = other->priv;
 
-  return (sock == other) ||
-      (priv && nice_socket_is_based_on (priv->base_socket, other));
+  return (sock == other) || nice_socket_is_base_of (sock, priv->base_socket);
 }

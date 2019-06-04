@@ -95,7 +95,7 @@ static gboolean socket_is_reliable (NiceSocket *sock);
 static gboolean socket_can_send (NiceSocket *sock, NiceAddress *addr);
 static void socket_set_writable_callback (NiceSocket *sock,
     NiceSocketWritableCb callback, gpointer user_data);
-static gboolean socket_is_based_on (NiceSocket *sock, NiceSocket *other);
+static gboolean socket_is_base_of (NiceSocket *sock, NiceSocket *other);
 
 NiceSocket *
 nice_http_socket_new (NiceSocket *base_socket,
@@ -127,7 +127,7 @@ nice_http_socket_new (NiceSocket *base_socket,
     sock->is_reliable = socket_is_reliable;
     sock->can_send = socket_can_send;
     sock->set_writable_callback = socket_set_writable_callback;
-    sock->is_based_on = socket_is_based_on;
+    sock->is_base_of = socket_is_base_of;
     sock->close = socket_close;
 
     /* Send HTTP CONNECT */
@@ -283,8 +283,9 @@ socket_recv_messages (NiceSocket *sock,
   HttpPriv *priv = sock->priv;
   gint ret = -1;
 
-  /* Make sure socket has not been freed: */
-  g_assert (sock->priv != NULL);
+  /* Socket has been closed: */
+  if (sock->priv == NULL)
+    return 0;
 
   if (priv->state == HTTP_STATE_CONNECTED) {
     guint i;
@@ -577,8 +578,9 @@ socket_send_messages (NiceSocket *sock, const NiceAddress *to,
 {
   HttpPriv *priv = sock->priv;
 
-  /* Make sure socket has not been freed: */
-  g_assert (sock->priv != NULL);
+  /* Socket has been closed: */
+  if (sock->priv == NULL)
+    return -1;
 
   if (priv->state == HTTP_STATE_CONNECTED) {
     /* Fast path. */
@@ -644,10 +646,9 @@ socket_set_writable_callback (NiceSocket *sock,
 }
 
 static gboolean
-socket_is_based_on (NiceSocket *sock, NiceSocket *other)
+socket_is_base_of (NiceSocket *sock, NiceSocket *other)
 {
-  HttpPriv *priv = sock->priv;
+  HttpPriv *priv = other->priv;
 
-  return (sock == other) ||
-      (priv && nice_socket_is_based_on (priv->base_socket, other));
+  return (sock == other) || nice_socket_is_base_of (sock, priv->base_socket);
 }
